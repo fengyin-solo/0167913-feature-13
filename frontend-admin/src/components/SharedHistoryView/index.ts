@@ -1,0 +1,1 @@
+export { SharedHistoryView } from './SharedHistoryView';

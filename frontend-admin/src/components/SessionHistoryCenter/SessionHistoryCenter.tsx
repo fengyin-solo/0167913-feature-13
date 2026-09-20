@@ -12,6 +12,8 @@ import {
   Calendar,
   ChevronDown,
   AlertTriangle,
+  Share2,
+  ExternalLink,
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { Button } from '@/components/ui';
@@ -25,6 +27,7 @@ export const SessionHistoryCenter: React.FC<{ onClose: () => void }> = ({ onClos
   const sessionRecords = useAppStore(state => state.sessionRecords);
   const deleteSessionRecord = useAppStore(state => state.deleteSessionRecord);
   const clearSessionRecords = useAppStore(state => state.clearSessionRecords);
+  const createShareLink = useAppStore(state => state.createShareLink);
   const addToast = useAppStore(state => state.addToast);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,6 +36,8 @@ export const SessionHistoryCenter: React.FC<{ onClose: () => void }> = ({ onClos
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
 
   const filteredRecords = useMemo(() => {
     return sessionRecords.filter(record => {
@@ -86,6 +91,26 @@ export const SessionHistoryCenter: React.FC<{ onClose: () => void }> = ({ onClos
     setSelectedRecord(null);
   };
 
+  const handleCreateShareLink = () => {
+    const url = createShareLink();
+    if (url) {
+      setShareUrl(url);
+      setShareCopied(false);
+    }
+  };
+
+  const handleCopyShareUrl = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareCopied(true);
+      addToast('success', '只读链接已复制');
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      addToast('error', '复制失败，请手动复制');
+    }
+  };
+
   const getTypeIcon = (type: SessionRecordType) => {
     return type === 'voice' ? (
       <Mic className="w-4 h-4" />
@@ -134,6 +159,14 @@ export const SessionHistoryCenter: React.FC<{ onClose: () => void }> = ({ onClos
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleCreateShareLink}
+              icon={<Share2 className="w-4 h-4" />}
+            >
+              分享只读视图
+            </Button>
             {sessionRecords.length > 0 && (
               <Button
                 variant="danger"
@@ -522,6 +555,60 @@ export const SessionHistoryCenter: React.FC<{ onClose: () => void }> = ({ onClos
                   className="flex-1"
                 >
                   确认清空
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 只读分享链接弹窗 */}
+        {shareUrl && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="glass-panel rounded-2xl p-6 max-w-md w-full mx-4 animate-fade-in">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-primary-500/20 rounded-full">
+                  <Share2 className="w-6 h-6 text-primary-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-dark-100">只读分享链接已生成</h3>
+                  <p className="text-sm text-dark-400">接收者仅可查看，无法修改</p>
+                </div>
+              </div>
+              <p className="text-sm text-dark-300 mb-4">
+                通过该链接打开的页面为只读视图，仅展示原文、译文与时间，不能修改或追加记录。
+              </p>
+              <div className="flex items-center gap-2 mb-4">
+                <input
+                  type="text"
+                  readOnly
+                  value={shareUrl}
+                  onFocus={(e) => e.target.select()}
+                  className="flex-1 min-w-0 px-3 py-2.5 bg-dark-800/80 border border-white/10 rounded-xl text-dark-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+                />
+                <Button
+                  size="sm"
+                  onClick={handleCopyShareUrl}
+                  icon={shareCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                >
+                  {shareCopied ? '已复制' : '复制'}
+                </Button>
+              </div>
+              <div className="flex gap-3">
+                <a
+                  href={shareUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-dark-700 hover:bg-dark-600 text-dark-200 rounded-lg transition-all duration-200 ease-out font-medium border border-white/10 text-sm"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  打开预览
+                </a>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShareUrl(null)}
+                  className="flex-1"
+                >
+                  关闭
                 </Button>
               </div>
             </div>

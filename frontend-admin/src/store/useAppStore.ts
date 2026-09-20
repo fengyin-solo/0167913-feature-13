@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { AppState, ToastType, AudioSettings, SessionRecord } from '@/types';
 import { generateId } from '@/utils/helpers';
+import { createShareEntry } from '@/utils/share';
 import { DEFAULT_AUDIO_SETTINGS, TOAST_DURATION } from '@/utils/constants';
 
 const STORAGE_KEY = 'subtitle-translator-session-records';
@@ -197,5 +198,14 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ sessionRecords: [] });
     saveRecordsToStorage([]);
     get().addToast('success', '所有记录已清空');
+  },
+
+  createShareLink: () => {
+    const url = createShareEntry();
+    if (!url) {
+      get().addToast('error', '当前环境无法生成只读链接，请检查浏览器存储权限');
+      return null;
+    }
+    return url;
   },
 }));

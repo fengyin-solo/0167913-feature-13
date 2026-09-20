@@ -106,4 +106,5 @@ export interface AppState {
   addSessionRecord: (record: Omit<SessionRecord, 'id' | 'timestamp'>) => void;
   deleteSessionRecord: (id: string) => void;
   clearSessionRecords: () => void;
+  createShareLink: () => string | null;
 }

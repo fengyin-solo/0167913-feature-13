@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { History } from 'lucide-react';
 import { ControlPanel } from '@/components/ControlPanel';
 import { SubtitleDisplay } from '@/components/SubtitleDisplay';
 import { TranslationPanel } from '@/components/TranslationPanel';
 import { SessionHistoryCenter } from '@/components/SessionHistoryCenter';
+import { SharedHistoryView } from '@/components/SharedHistoryView';
 import { ToastContainer } from '@/components/ui';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useAppStore } from '@/store/useAppStore';
+import { parseShareRequest } from '@/utils/share';
 
-const App: React.FC = () => {
+// 可写工作区（原有界面，保持不变）
+const TranslatorWorkspace: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false);
   const sessionRecords = useAppStore(state => state.sessionRecords);
 
@@ -78,6 +81,18 @@ const App: React.FC = () => {
       )}
     </div>
   );
+};
+
+const App: React.FC = () => {
+  // 根据当前地址判断只读/可写归属，刷新或重新进入时保持一致
+  const shareRequest = useMemo(() => parseShareRequest(), []);
+
+  // 只读分享入口：仅查看，绝不渲染可写界面
+  if (shareRequest.isShare) {
+    return <SharedHistoryView token={shareRequest.token} />;
+  }
+
+  return <TranslatorWorkspace />;
 };
 
 export default App;
