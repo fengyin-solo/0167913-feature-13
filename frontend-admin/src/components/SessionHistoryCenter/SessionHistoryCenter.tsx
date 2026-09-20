@@ -12,9 +12,11 @@ import {
   Calendar,
   ChevronDown,
   AlertTriangle,
+  Share2,
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { Button } from '@/components/ui';
+import { ShareManageModal } from '@/components/ReadonlyShare';
 import { LANGUAGES } from '@/utils/constants';
 import { formatTime, getLanguageDisplayName, truncateText } from '@/utils/helpers';
 import type { SessionRecord, SessionRecordType } from '@/types';
@@ -33,6 +35,7 @@ export const SessionHistoryCenter: React.FC<{ onClose: () => void }> = ({ onClos
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const filteredRecords = useMemo(() => {
     return sessionRecords.filter(record => {
@@ -134,6 +137,14 @@ export const SessionHistoryCenter: React.FC<{ onClose: () => void }> = ({ onClos
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowShareModal(true)}
+              icon={<Share2 className="w-4 h-4" />}
+            >
+              只读分享
+            </Button>
             {sessionRecords.length > 0 && (
               <Button
                 variant="danger"
@@ -526,6 +537,11 @@ export const SessionHistoryCenter: React.FC<{ onClose: () => void }> = ({ onClos
               </div>
             </div>
           </div>
+        )}
+
+        {/* 只读分享管理弹窗 */}
+        {showShareModal && (
+          <ShareManageModal onClose={() => setShowShareModal(false)} />
         )}
       </div>
     </div>

@@ -68,6 +68,28 @@ export interface SessionRecord {
   };
 }
 
+// 只读分享入口（持久化）
+export interface ShareEntry {
+  // 不可预测的访问凭证
+  token: string;
+  // 创建时间（ISO 字符串）
+  createdAt: string;
+  // 到期时间（ISO 字符串）
+  expiresAt: string;
+  // 创建入口时的记录条数，用于区分"创建时为空"与"创建后被清空"
+  recordCountAtCreation: number;
+}
+
+// 只读入口校验失败原因
+export type ShareAccessReason = 'invalid' | 'revoked' | 'expired' | 'valid';
+
+// 只读入口校验结果。失败时 entry 可能为空，调用方不得回退到可写界面
+export interface ShareAccess {
+  ok: boolean;
+  reason: ShareAccessReason;
+  entry?: ShareEntry;
+}
+
 // 应用状态
 export interface AppState {
   // 控制面板
